@@ -1,0 +1,18 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ClassDojo Configuration",
+        "description": "Entrez vos identifiants ClassDojo.",
+        "data": {
+          "username": "Nom d'utilisateur / Email",
+          "password": "Mot de passe",
+          "scan_interval": "Intervalle de mise à jour (secondes)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Ce compte ClassDojo est déjà configuré."
+    }
+  }
+}
