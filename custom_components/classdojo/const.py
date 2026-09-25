@@ -1,5 +1,7 @@
-"""Constants for ClassDojo."""
+from datetime import timedelta
+
+from homeassistant.const import Platform
+
 DOMAIN = "classdojo"
-CONF_USERNAME = "username"
-CONF_PASSWORD = "password"
-UPDATE_INTERVAL = 300
+PLATFORMS = [Platform.SENSOR]
+SCAN_INTERVAL = timedelta(minutes=5)
