@@ -1,57 +1,44 @@
-"""ClassDojo sensors."""
 from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
+from datetime import datetime
+from homeassistant.components.sensor import SensorEntity, SensorStateClass
+from homeassistant.const import EntityCategory, UnitOfTime
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
-    coordinator, _client = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([ClassDojoAccountSensor(coordinator, entry)], update_before_add=True)
-    children = coordinator.data.get("children", []) if coordinator.data else []
-    async_add_entities([ClassDojoChildSensor(coordinator, entry, child) for child in children], update_before_add=True)
+async def async_setup_entry(hass, entry, async_add_entities):
+    async_add_entities(
+        [
+            ClassDojoRefreshSensor(entry, "last_refresh", "Dernière actualisation"),
+            ClassDojoRefreshSensor(entry, "refresh_status", "État de l’actualisation"),
+            ClassDojoRefreshSensor(entry, "items_received", "Éléments reçus"),
+        ]
+    )
 
 
-class ClassDojoAccountSensor(CoordinatorEntity, SensorEntity):
-    """Account connectivity sensor."""
-    _attr_name = "ClassDojo account"
-    _attr_icon = "mdi:school"
+class ClassDojoRefreshSensor(CoordinatorEntity, SensorEntity):
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_has_entity_name = True
+    _attr_should_poll = False
 
-    def __init__(self, coordinator: DataUpdateCoordinator, entry: ConfigEntry) -> None:
+    def __init__(self, entry, key: str, name: str) -> None:
+        self._entry = entry
+        self._key = key
+        self._attr_name = name
+        self._attr_unique_id = f"{entry.entry_id}_{key}"
+        coordinator = entry.runtime_data.coordinator
         super().__init__(coordinator)
-        self._attr_unique_id = f"{entry.entry_id}_account"
 
     @property
     def native_value(self):
-        return "connected" if self.coordinator.data.get("connected") else "unavailable"
-
-    @property
-    def extra_state_attributes(self):
-        data = dict(self.coordinator.data or {})
-        data.pop("children", None)
-        return data
-
-
-class ClassDojoChildSensor(CoordinatorEntity, SensorEntity):
-    """Sensor for a discovered child."""
-
-    def __init__(self, coordinator, entry, child):
-        super().__init__(coordinator)
-        self.child_id = str(child.get("id") or child.get("name"))
-        self._attr_unique_id = f"{entry.entry_id}_child_{self.child_id}"
-        self._attr_name = child.get("name", f"Child {self.child_id}")
-        self._attr_icon = "mdi:account-child"
-
-    @property
-    def native_value(self):
-        child = next((c for c in self.coordinator.data.get("children", []) if str(c.get("id") or c.get("name")) == self.child_id), {})
-        return child.get("points", child.get("score"))
-
-    @property
-    def extra_state_attributes(self):
-        return next((c for c in self.coordinator.data.get("children", []) if str(c.get("id") or c.get("name")) == self.child_id), {})
+        runtime = self._entry.runtime_data
+        if self._key == "last_refresh":
+            return getattr(runtime, "last_refresh", None)
+        if self._key == "refresh_status":
+            return "Réussie" if getattr(runtime, "last_refresh_success", False) else (
+                "Échec" if getattr(runtime, "last_refresh", None) else "En attente"
+            )
+        summary = getattr(runtime, "data_summary", {})
+        return sum(value for value in summary.values() if isinstance(value, int))
