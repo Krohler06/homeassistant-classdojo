@@ -1,14 +1,11 @@
 {
-  "config": {
-    "step": {
-      "user": {
-        "title": "Connect to ClassDojo",
-        "description": "Enter your parent account credentials.",
-        "data": {
-          "username": "Username or email",
-          "password": "Password"
-        }
-      }
+  "config": {},
+  "options": {},
+  "entity": {
+    "sensor": {
+      "last_refresh": {"name": "Dernière actualisation"},
+      "refresh_status": {"name": "État de l’actualisation"},
+      "items_received": {"name": "Éléments reçus"}
     }
   }
 }
