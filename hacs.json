@@ -1,7 +1,4 @@
 {
   "name": "ClassDojo",
-  "country": ["FR", "US", "CA", "GB", "BE", "CH", "LU"],
-  "render_readme": true,
-  "zip_release": true,
-  "filename": "classdojo.zip"
+  "render_readme": true
 }
