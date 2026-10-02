@@ -1,7 +1,7 @@
 {
   "name": "ClassDojo",
-  "content_in_root": false,
-  "filename": "manifest.json",
+  "country": ["FR", "US", "CA", "GB", "BE", "CH", "LU"],
   "render_readme": true,
-  "homeassistant": "2024.1.0"
+  "zip_release": true,
+  "filename": "classdojo.zip"
 }
